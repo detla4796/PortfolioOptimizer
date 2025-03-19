@@ -11,19 +11,22 @@ bool srn(const pair<string, pair<double, pair<double, double>>> frst, const pair
     return f > s;
 }
 
-vector<string> srt(vector<pair<string, pair<double, pair<double, double>>>> lst, double mxr, double mxb)
+vector<pair<string, int>> srt(vector<pair<string, pair<double, pair<double, double>>>> lst, double mxr, double mxb)
 {
-    vector<string> new_lst;
+    vector<pair<string, int>> new_lst;
     double sm_r = 0.0;
     double sm_b = 0.0;
     sort(lst.begin(), lst.end(), srn);
     for (auto i : lst)
     {
-        if (sm_r + i.second.second.first <= mxr && sm_b + i.second.second.second <= mxb)
+        int srisk = (mxr - sm_r) / i.second.second.first;
+        int sbudg = (mxb - sm_b) / i.second.second.second;
+        int count_a = min(srisk, sbudg);
+        if (count_a > 0)
         {
-            new_lst.push_back(i.first);
-            sm_r += i.second.second.first;
-            sm_b += i.second.second.second;
+            new_lst.push_back({i.first, count_a});
+            sm_r += count_a * i.second.second.first;
+            sm_b += count_a * i.second.second.second;
         }
     }
     return new_lst;
@@ -57,11 +60,45 @@ int main()
         cout << endl;
         lst.push_back(ak);
     }
-    vector<string> res = srt(lst, mxr, mxb);
+    vector<pair<string, int>> res = srt(lst, mxr, mxb);
 
     cout << "\nSelected:\n";
-    for (auto i : res)
+    double tcost = 0.0;
+    double trisk = 0.0;
+    double tincome = 0.0;
+
+    for (size_t i = 0; i < res.size(); i++)
     {
-        cout << i << endl;
+        string name = res[i].first;
+        int s = res[i].second;
+
+        auto inv = lst[i];
+        for (const auto& item : lst)
+        {
+            if(item.first == name)
+            {
+                inv = item;
+                break;
+            }
+        }
+
+        double risk = s * inv.second.second.first;
+        double cost = s * inv.second.second.second;
+        double income = s * inv.second.first;
+
+        cout << res[i].first << endl;
+        cout << " Shares: " << s << endl;
+        cout << " Cost: " << cost << endl;
+        cout << " Income: " << income << endl;
+        cout << " Risk: " << risk << endl;
+
+        tcost += cost;
+        trisk += risk;
+        tincome += income;
     }
+
+    cout << "\nPortfolio:\n";
+    cout << "Total cost: " << tcost << endl;
+    cout << "Total risk: " << trisk << endl;
+    cout << "Expected income: " << tincome << endl;
 }
